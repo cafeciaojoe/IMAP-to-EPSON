@@ -9,8 +9,8 @@ import datetime
 import time
 
 # account credentials
-username = "cheapestpartydjs@hotmail.com"
-password = "Pic[17]asso"
+username = ""
+password = ""
 # use your email provider's IMAP server, you can look for your provider's IMAP server on Google
 # or check this page: https://www.systoolsgroup.com/imap/
 # for office 365, it's this:
