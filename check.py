@@ -20,30 +20,54 @@ def clean(text):
     # clean text for creating a folder
     return "".join(c if c.isalnum() else "_" for c in text)
 
-def latest_date_printed(date):
+def print_check(date):
     """ datetime.datetime A combination of a date and a time.
     Attributes: year, month, day, hour, minute, second, microsecond, and tzinfo."""
 
     """https://docs.python.org/3/library/email.utils.html"""
 
-    """time zone not passed in here, did not want to chang hot mail setting in case they took a long time to propogate"""
+    """time zone not passed in here, did not want to chang hot mail setting in case they took a long time to propogate
+    so i just added +2 to the hour argument"""
+
+    with open("latest_unix.txt", "r") as my_file:
+        read_unix = int(my_file.read())
+        print("read_unix_value =", read_unix)
+        my_file.close()
 
     date_parsed = email.utils.parsedate(date)
     date_time = datetime.datetime(
         date_parsed[0],
         date_parsed[1],
         date_parsed[2],
-        date_parsed[3],
+        date_parsed[3]+2,
         date_parsed[4],
         date_parsed[6])
-    latest_unix = int((time.mktime(date_time.timetuple())))
+    passed_in_unix = int((time.mktime(date_time.timetuple())))
 
     print("Given Date:", date_time)
-    print("UNIX timestamp:",latest_unix)
-    return latest_unix
+    print("UNIX timestamp:",passed_in_unix)
 
-#latest_date_printed("Fri, 19 May 2023 19:46:27 -0700")
+    if read_unix >= passed_in_unix:
+        print("Print check ture, email has already been printed")
+        return True
+    else:
+        print("Print check false, email has not been printed yet")
+        with open("latest_unix.txt", "w") as my_file:
+                my_file.write(str(passed_in_unix))
+                print("writing passed_in_unix to file")
+                my_file.close()
+        return False
+
+#print_check("Fri, 19 May 2023 19:46:27 -0700")
 #print("hi")
+
+def thermal_print(From,subject, body):
+    print("BZZZZZZZZ"*100)
+    print("FROM", From)
+    print("SUBJECT",subject)
+    print("BODY", body)
+    print("BZZZZZZZZ"*100)
+
 
 # create an IMAP4 class with SSL
 imap = imaplib.IMAP4_SSL(imap_server)
@@ -52,20 +76,18 @@ imap.login(username, password)
 
 status, messages = imap.select("INBOX")
 # number of top emails to fetch
-N = 3
+#N = 3
 # total number of emails
 messages = int(messages[0])
-
+print(messages)
 """added plus one to for loop range so it does not go to 0,that causes an error The specified message set is invalid"""
-for i in range(messages, messages-N+1, -1):
+for i in range(1,messages+1, +1):
     # fetch the email message by ID
     res, msg = imap.fetch(str(i), "(RFC822)")
     for response in msg:
         if isinstance(response, tuple):
             # parse a bytes email into a message object
             msg = email.message_from_bytes(response[1])
-            print(msg.keys())
-            latest_date_printed(msg["date"])
             # decode the email subject
             subject, encoding = decode_header(msg["Subject"])[0]
             if isinstance(subject, bytes):
@@ -92,6 +114,7 @@ for i in range(messages, messages-N+1, -1):
                     if content_type == "text/plain" and "attachment" not in content_disposition:
                         # print text/plain emails and skip attachments
                         print(body)
+                        thermal_body = body
                     elif "attachment" in content_disposition:
                         # download attachment
                         filename = part.get_filename()
@@ -111,9 +134,11 @@ for i in range(messages, messages-N+1, -1):
                 if content_type == "text/plain":
                     # print only text email parts
                     print(body)
+                    thermal_body = body
             if content_type == "text/html":
                 # if it's HTML, create a new HTML file and open it in browser
                 folder_name = clean(subject)
+                """
                 if not os.path.isdir(folder_name):
                     # make a folder for this email (named after the subject)
                     os.mkdir(folder_name)
@@ -123,7 +148,12 @@ for i in range(messages, messages-N+1, -1):
                 open(filepath, "w").write(body)
                 # open in the default browser
                 webbrowser.open(filepath)
+                """
             print("="*100)
+    # print(msg.keys())
+    if print_check(msg["date"]) is False:
+        thermal_print(From,subject,thermal_body)
+
 # close the connection and logout
 imap.close()
 imap.logout()
