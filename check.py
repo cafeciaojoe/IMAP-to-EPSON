@@ -62,10 +62,12 @@ def print_check(date):
 #print("hi")
 
 def thermal_print(From,subject, body):
+    max_body_lengh = 1000 #characters
+
     print("BZZZZZZZZ"*100)
     print("FROM", From)
     print("SUBJECT",subject)
-    print("BODY", body)
+    print("BODY", body[:max_body_lengh])
     print("BZZZZZZZZ"*100)
 
 
