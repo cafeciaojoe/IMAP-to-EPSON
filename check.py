@@ -115,8 +115,8 @@ for i in range(1,messages+1, +1):
                         pass
                     if content_type == "text/plain" and "attachment" not in content_disposition:
                         # print text/plain emails and skip attachments
-                        print(body)
-                        thermal_body = body
+                        thermal_body = body.encode()
+                        print(thermal_body)
                     elif "attachment" in content_disposition:
                         # download attachment
                         filename = part.get_filename()
@@ -135,8 +135,8 @@ for i in range(1,messages+1, +1):
                 body = msg.get_payload(decode=True).decode()
                 if content_type == "text/plain":
                     # print only text email parts
-                    print(body)
-                    thermal_body = body
+                    thermal_body = body.encode()
+                    print(thermal_body)
             if content_type == "text/html":
                 # if it's HTML, create a new HTML file and open it in browser
                 folder_name = clean(subject)
